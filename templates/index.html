@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vibe Check</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 16px;background:#0f1220;color:#eef}
+.card{background:#1a1f36;border-radius:16px;padding:24px}
+textarea{width:100%;height:90px;border-radius:10px;padding:12px;font-size:16px}
+button{background:#7c5cff;color:#fff;border:0;border-radius:10px;padding:12px 20px;font-size:16px;cursor:pointer}
+.meter{height:18px;background:linear-gradient(90deg,#ff5470,#ffd166,#3ddc84);border-radius:9px;position:relative;margin:16px 0}
+.dot{position:absolute;top:-4px;width:26px;height:26px;background:#fff;border-radius:50%;transform:translateX(-50%)}
+.bar{height:12px;background:#7c5cff;border-radius:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+small{color:#aab}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Vibe Check</h1>
+<p>Paste a post, comment, or message. Get its vibe, a -100 to +100 vibe meter, emotion mix, and the words that drove it.</p>
+<form method="post" action="/check">
+<textarea name="text" placeholder="type something...">{{ text or '' }}</textarea>
+<br><br><button type="submit">Check the vibe</button>
+</form>
+<p><small>Try: {% for e in examples %}<br>- {{ e }}{% endfor %}</small></p>
+{% if result %}
+<hr>
+<h2>Vibe: {{ result.vibe }} ({{ result.vibe_score }})</h2>
+<div class="meter"><div class="dot" style="left:{{ (result.vibe_score + 100) / 2 }}%"></div></div>
+<p>Confidence: {{ result.confidence }} &middot; Top emotion: {{ result.top_emotion }} &middot; Baseline agrees: {{ result.agree }}</p>
+<h3>Emotions</h3>
+{% for name, val in result.emotions.items() %}
+<div class="grid"><span>{{ name }}</span><span>{{ val }}</span></div>
+<div class="bar" style="width:{{ (val * 100)|int }}%"></div>
+{% endfor %}
+<p>Keywords: {{ result.keywords|join(', ') }}</p>
+{% endif %}
+</div>
+</body>
+</html>
