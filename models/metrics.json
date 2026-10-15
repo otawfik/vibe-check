@@ -1,0 +1,39 @@
+{
+  "n_train": 600,
+  "n_test": 200,
+  "baseline_accuracy": 0.685,
+  "classifier_accuracy": 1.0,
+  "classifier_per_class": {
+    "chill": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 48
+    },
+    "hype": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 33
+    },
+    "negative": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 36
+    },
+    "neutral": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 43
+    },
+    "positive": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 40
+    }
+  },
+  "dataset": "synthetic template corpus, seed=7"
+}

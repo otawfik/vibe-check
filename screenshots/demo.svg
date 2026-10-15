@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+<rect width="900" height="420" rx="18" fill="#0f1220"/>
+<text x="36" y="52" font-family="sans-serif" font-size="30" fill="#ffffff" font-weight="700">Vibe Check</text>
+<text x="36" y="82" font-family="sans-serif" font-size="15" fill="#aab">sentiment + emotion + vibe meter for short social text</text>
+<g>
+<rect x="36" y="104" width="828" height="86" rx="12" fill="#1a1f36"/>
+<text x="56" y="136" font-family="sans-serif" font-size="15" fill="#eef">lets gooooo we won, this is incredible, best night ever!!</text>
+<text x="56" y="164" font-family="sans-serif" font-size="14" fill="#3ddc84">vibe: hype  score: 100  emotion: surprise  conf: 0.9898</text>
+</g>
+<g>
+<rect x="36" y="204" width="828" height="86" rx="12" fill="#1a1f36"/>
+<text x="56" y="236" font-family="sans-serif" font-size="15" fill="#eef">quiet morning, coffee and a good book, feeling calm and cozy</text>
+<text x="56" y="264" font-family="sans-serif" font-size="14" fill="#3ddc84">vibe: chill  score: 42  emotion: neutral  conf: 0.9968</text>
+</g>
+<g>
+<rect x="36" y="304" width="828" height="86" rx="12" fill="#1a1f36"/>
+<text x="56" y="336" font-family="sans-serif" font-size="15" fill="#eef">i hate this broken app, worst update ever, so angry</text>
+<text x="56" y="364" font-family="sans-serif" font-size="14" fill="#3ddc84">vibe: negative  score: -100  emotion: anger  conf: 1.0</text>
+</g>
+</svg>
