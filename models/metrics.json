@@ -1,39 +1,357 @@
 {
-  "n_train": 600,
-  "n_test": 200,
-  "baseline_accuracy": 0.685,
-  "classifier_accuracy": 1.0,
-  "classifier_per_class": {
-    "chill": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "support": 48
-    },
-    "hype": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "support": 33
-    },
-    "negative": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "support": 36
-    },
-    "neutral": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "support": 43
-    },
-    "positive": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "support": 40
+  "sentiment": {
+    "labels": [
+      "negative",
+      "neutral",
+      "positive"
+    ],
+    "metric": "macro_recall",
+    "n_train": 45615,
+    "n_val": 2000,
+    "n_test": 12284,
+    "rows": [
+      {
+        "variant": "lexicon-rules",
+        "C": null,
+        "macro_recall": 0.4658,
+        "macro_f1": 0.4464,
+        "accuracy": 0.5453,
+        "official": 0.4658,
+        "confusion": [
+          [
+            533,
+            3194,
+            245
+          ],
+          [
+            212,
+            5275,
+            450
+          ],
+          [
+            44,
+            1441,
+            890
+          ]
+        ],
+        "name": "Lexicon rules (no learning)"
+      },
+      {
+        "variant": "tfidf",
+        "C": 1,
+        "val_official": 0.6664,
+        "macro_recall": 0.6008,
+        "macro_f1": 0.5899,
+        "accuracy": 0.5928,
+        "official": 0.6008,
+        "confusion": [
+          [
+            2641,
+            1079,
+            252
+          ],
+          [
+            1819,
+            3233,
+            885
+          ],
+          [
+            290,
+            677,
+            1408
+          ]
+        ],
+        "name": "TF-IDF words, default tokenizer"
+      },
+      {
+        "variant": "+social",
+        "C": 2,
+        "val_official": 0.6735,
+        "macro_recall": 0.6096,
+        "macro_f1": 0.5957,
+        "accuracy": 0.5973,
+        "official": 0.6096,
+        "confusion": [
+          [
+            2598,
+            1107,
+            267
+          ],
+          [
+            1716,
+            3248,
+            973
+          ],
+          [
+            263,
+            621,
+            1491
+          ]
+        ],
+        "name": "+ social-text tokenizer"
+      },
+      {
+        "variant": "+chars",
+        "C": 1,
+        "val_official": 0.6929,
+        "macro_recall": 0.6406,
+        "macro_f1": 0.6286,
+        "accuracy": 0.6306,
+        "official": 0.6406,
+        "confusion": [
+          [
+            2725,
+            1031,
+            216
+          ],
+          [
+            1571,
+            3477,
+            889
+          ],
+          [
+            223,
+            608,
+            1544
+          ]
+        ],
+        "name": "+ character 2-5 grams"
+      },
+      {
+        "variant": "+lexicon",
+        "C": 1,
+        "val_official": 0.6945,
+        "macro_recall": 0.6343,
+        "macro_f1": 0.6243,
+        "accuracy": 0.6279,
+        "official": 0.6343,
+        "confusion": [
+          [
+            2704,
+            1046,
+            222
+          ],
+          [
+            1565,
+            3511,
+            861
+          ],
+          [
+            239,
+            638,
+            1498
+          ]
+        ],
+        "name": "+ lexicon features (full model)"
+      }
+    ],
+    "published": {
+      "SVM": 62.9,
+      "FastText": 62.9,
+      "LSTM": 58.3,
+      "RoBERTa-base": 71.3,
+      "TimeLMs-2021": 73.7
     }
   },
-  "dataset": "synthetic template corpus, seed=7"
+  "emotion": {
+    "labels": [
+      "anger",
+      "joy",
+      "optimism",
+      "sadness"
+    ],
+    "metric": "macro_f1",
+    "n_train": 3257,
+    "n_val": 374,
+    "n_test": 1421,
+    "rows": [
+      {
+        "variant": "lexicon-rules",
+        "C": null,
+        "macro_recall": 0.4028,
+        "macro_f1": 0.4004,
+        "accuracy": 0.5285,
+        "official": 0.4004,
+        "confusion": [
+          [
+            506,
+            19,
+            7,
+            26
+          ],
+          [
+            196,
+            109,
+            33,
+            20
+          ],
+          [
+            89,
+            13,
+            8,
+            13
+          ],
+          [
+            225,
+            20,
+            9,
+            128
+          ]
+        ],
+        "name": "Lexicon rules (no learning)"
+      },
+      {
+        "variant": "tfidf",
+        "C": 8,
+        "val_official": 0.575,
+        "macro_recall": 0.6023,
+        "macro_f1": 0.6014,
+        "accuracy": 0.6467,
+        "official": 0.6014,
+        "confusion": [
+          [
+            415,
+            48,
+            39,
+            56
+          ],
+          [
+            65,
+            214,
+            19,
+            60
+          ],
+          [
+            40,
+            14,
+            56,
+            13
+          ],
+          [
+            83,
+            40,
+            25,
+            234
+          ]
+        ],
+        "name": "TF-IDF words, default tokenizer"
+      },
+      {
+        "variant": "+social",
+        "C": 2,
+        "val_official": 0.5871,
+        "macro_recall": 0.6194,
+        "macro_f1": 0.6138,
+        "accuracy": 0.658,
+        "official": 0.6138,
+        "confusion": [
+          [
+            405,
+            47,
+            47,
+            59
+          ],
+          [
+            58,
+            224,
+            20,
+            56
+          ],
+          [
+            36,
+            17,
+            59,
+            11
+          ],
+          [
+            67,
+            42,
+            26,
+            247
+          ]
+        ],
+        "name": "+ social-text tokenizer"
+      },
+      {
+        "variant": "+chars",
+        "C": 2,
+        "val_official": 0.6349,
+        "macro_recall": 0.6687,
+        "macro_f1": 0.6669,
+        "accuracy": 0.7108,
+        "official": 0.6669,
+        "confusion": [
+          [
+            441,
+            38,
+            31,
+            48
+          ],
+          [
+            50,
+            241,
+            18,
+            49
+          ],
+          [
+            32,
+            13,
+            64,
+            14
+          ],
+          [
+            58,
+            37,
+            23,
+            264
+          ]
+        ],
+        "name": "+ character 2-5 grams"
+      },
+      {
+        "variant": "+lexicon",
+        "C": 8,
+        "val_official": 0.6362,
+        "macro_recall": 0.6738,
+        "macro_f1": 0.6764,
+        "accuracy": 0.7185,
+        "official": 0.6764,
+        "confusion": [
+          [
+            440,
+            41,
+            27,
+            50
+          ],
+          [
+            47,
+            250,
+            13,
+            48
+          ],
+          [
+            33,
+            13,
+            62,
+            15
+          ],
+          [
+            55,
+            42,
+            16,
+            269
+          ]
+        ],
+        "name": "+ lexicon features (full model)"
+      }
+    ],
+    "published": {
+      "SVM": 64.7,
+      "FastText": 65.2,
+      "LSTM": 66.0,
+      "RoBERTa-base": 76.1,
+      "TimeLMs-2021": 80.2
+    }
+  },
+  "dataset": "TweetEval (Barbieri et al., 2020), official train/val/test splits"
 }

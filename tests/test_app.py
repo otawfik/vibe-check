@@ -1,30 +1,21 @@
-import pytest
-
-pytest.importorskip("flask")
-from app import app
-
-
-@pytest.fixture
-def client():
-    app.config.update(TESTING=True)
-    with app.test_client() as c:
-        yield c
-
-
-def test_health(client):
-    assert client.get("/health").get_json() == {"status": "ok"}
-
-
-def test_index(client):
-    assert client.get("/").status_code == 200
+def test_index_renders_benchmark(client):
+    html = client.get("/").get_data(as_text=True)
+    assert "Vibe Check" in html and "Published, same test set" in html and "RoBERTa-base" in html
 
 
 def test_api_check(client):
-    r = client.post("/api/check", json={"text": "i love this amazing day"})
+    r = client.post("/api/check", json={"text": "so happy we won!!"})
     assert r.status_code == 200
     body = r.get_json()
-    assert "vibe" in body and "vibe_score" in body
+    assert body["vibe"] in {"hype", "chill", "heated", "down", "neutral"}
+    assert set(body["emotion"]) == {"anger", "joy", "optimism", "sadness"}
 
 
-def test_api_check_empty(client):
+def test_api_check_requires_text(client):
     assert client.post("/api/check", json={"text": ""}).status_code == 400
+    assert client.post("/api/check", data="x").status_code == 400
+
+
+def test_api_metrics(client):
+    m = client.get("/api/metrics").get_json()
+    assert {"sentiment", "emotion"} <= set(m)

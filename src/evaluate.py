@@ -1,23 +1,20 @@
-"""Evaluation helpers: accuracy and per-class report without extra deps."""
-from collections import defaultdict
+"""Scoring with TweetEval's official metric per task.
+
+Sentiment is scored by macro-averaged recall and emotion by macro-F1, as in
+the TweetEval paper, so the numbers are directly comparable to its table.
+"""
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, recall_score
+
+OFFICIAL = {"sentiment": "macro_recall", "emotion": "macro_f1"}
 
 
-def accuracy(y_true, y_pred) -> float:
-    if not y_true:
-        return 0.0
-    return sum(1 for a, b in zip(y_true, y_pred) if a == b) / len(y_true)
-
-
-def per_class_report(y_true, y_pred):
-    labels = sorted(set(y_true) | set(y_pred))
-    report = {}
-    for lab in labels:
-        tp = sum(1 for a, b in zip(y_true, y_pred) if a == lab and b == lab)
-        fp = sum(1 for a, b in zip(y_true, y_pred) if a != lab and b == lab)
-        fn = sum(1 for a, b in zip(y_true, y_pred) if a == lab and b != lab)
-        prec = tp / (tp + fp) if tp + fp else 0.0
-        rec = tp / (tp + fn) if tp + fn else 0.0
-        f1 = 2 * prec * rec / (prec + rec) if prec + rec else 0.0
-        report[lab] = {"precision": round(prec, 4), "recall": round(rec, 4),
-                       "f1": round(f1, 4), "support": sum(1 for a in y_true if a == lab)}
-    return report
+def score(task, y_true, y_pred, labels):
+    out = {
+        "macro_recall": recall_score(y_true, y_pred, average="macro", labels=labels, zero_division=0),
+        "macro_f1": f1_score(y_true, y_pred, average="macro", labels=labels, zero_division=0),
+        "accuracy": accuracy_score(y_true, y_pred),
+    }
+    out = {k: round(float(v), 4) for k, v in out.items()}
+    out["official"] = out[OFFICIAL[task]]
+    out["confusion"] = confusion_matrix(y_true, y_pred, labels=labels).tolist()
+    return out
