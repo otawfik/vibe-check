@@ -5,3 +5,8 @@ venv/
 .pytest_cache/
 models/*.pkl
 .DS_Store
+
+# local / deploy state — never commit
+.vercel/
+.env*
+artifacts/

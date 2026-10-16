@@ -1,27 +1,44 @@
-from src.data import generate_dataset, train_test_split
-from src.evaluate import accuracy
-from src.models import LexiconBaseline, VibeClassifier
+import pytest
+from sklearn.metrics import accuracy_score
+
+from src import data, evaluate, features, models
 
 
-def test_baseline_obvious_cases():
-    b = LexiconBaseline()
-    assert b.predict_one("i love this amazing thing") in ("positive", "chill", "hype")
-    assert b.predict_one("meeting at three tomorrow") == "neutral"
-    assert b.predict_one("i hate this terrible thing") == "negative"
+@pytest.mark.parametrize("variant", list(models.VARIANTS))
+def test_every_variant_trains(variant):
+    x, y = data.toy("sentiment", n_per_class=15)
+    m = models.build(variant).fit(x, y)
+    assert set(m.predict(x)) <= set(data.LABELS["sentiment"])
 
 
-def test_classifier_beats_baseline():
-    texts, labels = generate_dataset(n_per_class=80, seed=7)
-    Xtr, Xte, ytr, yte = train_test_split(texts, labels, seed=7)
-    base_acc = accuracy(yte, LexiconBaseline().predict(Xte))
-    clf = VibeClassifier().fit(Xtr, ytr)
-    ml_acc = accuracy(yte, clf.predict(Xte))
-    assert ml_acc >= 0.80
-    assert ml_acc >= base_acc
+def test_full_model_beats_rules():
+    x, y = data.toy("emotion", seed=1)
+    xt, yt = data.toy("emotion", seed=2)
+    learned = accuracy_score(yt, models.build(models.FULL, C=4).fit(x, y).predict(xt))
+    rules = accuracy_score(yt, models.LexiconBaseline("emotion").fit(x, y).predict(xt))
+    assert learned > rules
 
 
-def test_predict_proba_sums():
-    texts, labels = generate_dataset(n_per_class=20, seed=7)
-    clf = VibeClassifier().fit(texts, labels)
-    proba = clf.predict_proba(["i love this"])[0]
-    assert abs(sum(proba.values()) - 1.0) < 1e-6
+def test_sentiment_rules_obvious_cases():
+    b = models.LexiconBaseline("sentiment").fit(["x"], ["neutral"])
+    assert b.predict(["i love this, amazing", "i hate this, awful", "bus at nine"]) == ["positive", "negative", "neutral"]
+
+
+def test_emotion_rules_fall_back_to_majority():
+    b = models.LexiconBaseline("emotion").fit(["a", "b", "c"], ["joy", "joy", "anger"])
+    assert b.predict_one("the bus is at nine") == "joy"
+
+
+def test_feature_blocks_switch():
+    assert [n for n, _ in features.build(chars=False, lexicon=False).transformer_list] == ["words"]
+    assert [n for n, _ in features.build().transformer_list] == ["words", "chars", "lexicon"]
+
+
+def test_official_metric_per_task():
+    y = ["a", "a", "b", "b"]
+    p = ["a", "a", "a", "b"]
+    s = evaluate.score("sentiment", y, p, ["a", "b"])
+    assert s["official"] == s["macro_recall"] == 0.75
+    e = evaluate.score("emotion", y, p, ["a", "b"])
+    assert e["official"] == e["macro_f1"]
+    assert s["confusion"] == [[2, 0], [1, 1]]

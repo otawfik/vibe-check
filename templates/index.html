@@ -1,41 +1,207 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Vibe Check</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibe Check — where a post lands on the circumplex</title>
+<meta name="description" content="Sentiment and emotion models trained on TweetEval, combined on Russell's circumplex of affect: hype, chill, heated, down.">
 <style>
-body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 16px;background:#0f1220;color:#eef}
-.card{background:#1a1f36;border-radius:16px;padding:24px}
-textarea{width:100%;height:90px;border-radius:10px;padding:12px;font-size:16px}
-button{background:#7c5cff;color:#fff;border:0;border-radius:10px;padding:12px 20px;font-size:16px;cursor:pointer}
-.meter{height:18px;background:linear-gradient(90deg,#ff5470,#ffd166,#3ddc84);border-radius:9px;position:relative;margin:16px 0}
-.dot{position:absolute;top:-4px;width:26px;height:26px;background:#fff;border-radius:50%;transform:translateX(-50%)}
-.bar{height:12px;background:#7c5cff;border-radius:6px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-small{color:#aab}
+  :root { --bg:#14121a; --panel:#1d1a25; --line:#2f2a3b; --soft:#262130; --text:#efeaf6; --mute:#a59db5;
+          --hype:#ff9f43; --chill:#4ecdc4; --heated:#ff6b6b; --down:#7f8cff; --neutral:#a59db5; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text);
+         margin: 0; padding: 28px 18px 60px; line-height: 1.5; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; }
+  .sub { color: var(--mute); margin: 0; max-width: 72ch; }
+  h2 { font-size: 19px; margin: 44px 0 6px; }
+  .note { color: var(--mute); font-size: 14px; margin: 0 0 14px; max-width: 76ch; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  textarea { width: 100%; min-height: 92px; padding: 12px; border-radius: 8px; border: 1px solid var(--line);
+             background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; resize: vertical; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  button { padding: 10px 18px; background: var(--hype); color: #1b1300; border: 0; border-radius: 8px;
+           font-size: 14.5px; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .ex { background: none; border: 1px dashed var(--line); color: var(--mute); padding: 5px 11px; font-size: 12.5px;
+        font-weight: 400; border-radius: 999px; }
+  .ex:hover { color: var(--text); border-color: var(--mute); }
+  .status { color: var(--mute); font-size: 13px; }
+  .result { display: grid; grid-template-columns: 320px minmax(0,1fr); gap: 26px; margin-top: 20px; }
+  @media (max-width: 760px) { .result { grid-template-columns: minmax(0,1fr); } }
+  .plot svg { width: 100%; max-width: 320px; display: block; }
+  .vibe { font-size: 34px; font-weight: 800; letter-spacing: -.02em; margin: 0; text-transform: uppercase; }
+  .meta { color: var(--mute); font-size: 13.5px; margin: 2px 0 16px; font-family: ui-monospace, Menlo, monospace; }
+  .bars { display: grid; grid-template-columns: 74px 1fr 42px; gap: 6px 10px; align-items: center; font-size: 13px; margin-bottom: 16px; }
+  .bars .track { height: 8px; background: var(--soft); border-radius: 99px; overflow: hidden; }
+  .bars .fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+  .bars .v { font-family: ui-monospace, Menlo, monospace; color: var(--mute); text-align: right; }
+  .lab { color: var(--mute); font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; margin: 0 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; padding: 3px 9px; border-radius: 6px; }
+  .chip.up { background: rgba(78,205,196,.14); color: var(--chill); }
+  .chip.down { background: rgba(255,107,107,.14); color: var(--heated); }
+  .chip.cue { background: rgba(255,159,67,.14); color: var(--hype); }
+  .empty { color: var(--mute); font-size: 13px; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--soft); white-space: nowrap; }
+  th { color: var(--mute); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  td.num { font-family: ui-monospace, Menlo, monospace; text-align: right; }
+  th.num { text-align: right; }
+  tr.full td { font-weight: 700; }
+  tr.pub td { color: var(--mute); }
+  tr.sep td { color: var(--mute); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; padding-top: 16px; }
+  .grid2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0,1fr); } }
+  .grid2 > *, .result > * { min-width: 0; }
+  footer { margin-top: 48px; color: #776f87; font-size: 13px; }
+  a { color: var(--chill); }
 </style>
 </head>
 <body>
-<div class="card">
-<h1>Vibe Check</h1>
-<p>Paste a post, comment, or message. Get its vibe, a -100 to +100 vibe meter, emotion mix, and the words that drove it.</p>
-<form method="post" action="/check">
-<textarea name="text" placeholder="type something...">{{ text or '' }}</textarea>
-<br><br><button type="submit">Check the vibe</button>
-</form>
-<p><small>Try: {% for e in examples %}<br>- {{ e }}{% endfor %}</small></p>
-{% if result %}
-<hr>
-<h2>Vibe: {{ result.vibe }} ({{ result.vibe_score }})</h2>
-<div class="meter"><div class="dot" style="left:{{ (result.vibe_score + 100) / 2 }}%"></div></div>
-<p>Confidence: {{ result.confidence }} &middot; Top emotion: {{ result.top_emotion }} &middot; Baseline agrees: {{ result.agree }}</p>
-<h3>Emotions</h3>
-{% for name, val in result.emotions.items() %}
-<div class="grid"><span>{{ name }}</span><span>{{ val }}</span></div>
-<div class="bar" style="width:{{ (val * 100)|int }}%"></div>
-{% endfor %}
-<p>Keywords: {{ result.keywords|join(', ') }}</p>
-{% endif %}
+<div class="wrap">
+  <h1>Vibe Check</h1>
+  <p class="sub">Two models trained on 49,000 labelled tweets, one for sentiment and one for emotion, placed on psychology&rsquo;s
+     circumplex of affect: how pleasant a post is, and how much energy it has.</p>
+
+  <div class="card" style="margin-top:22px">
+    <textarea id="text" maxlength="1000" placeholder="Paste a post, a comment, a text message…"></textarea>
+    <div class="row">
+      <button id="go">Check the vibe</button>
+      {% for e in examples %}<button class="ex">{{ e }}</button>{% endfor %}
+      <span class="status" id="status"></span>
+    </div>
+
+    <div class="result" id="result" hidden>
+      <div class="plot">
+        <svg viewBox="0 0 320 320" role="img" aria-label="Circumplex: valence left to right, energy bottom to top">
+          <rect x="0" y="0" width="160" height="160" fill="rgba(255,107,107,.07)"/>
+          <rect x="160" y="0" width="160" height="160" fill="rgba(255,159,67,.08)"/>
+          <rect x="0" y="160" width="160" height="160" fill="rgba(127,140,255,.07)"/>
+          <rect x="160" y="160" width="160" height="160" fill="rgba(78,205,196,.07)"/>
+          <line x1="160" y1="0" x2="160" y2="320" stroke="#3a3348"/>
+          <line x1="0" y1="160" x2="320" y2="160" stroke="#3a3348"/>
+          <text x="10" y="22" fill="#ff6b6b" font-size="12" font-weight="700">HEATED</text>
+          <text x="310" y="22" fill="#ff9f43" font-size="12" font-weight="700" text-anchor="end">HYPE</text>
+          <text x="10" y="310" fill="#7f8cff" font-size="12" font-weight="700">DOWN</text>
+          <text x="310" y="310" fill="#4ecdc4" font-size="12" font-weight="700" text-anchor="end">CHILL</text>
+          <text x="160" y="152" fill="#776f87" font-size="10" text-anchor="middle">energy ↑</text>
+          <text x="314" y="174" fill="#776f87" font-size="10" text-anchor="end">pleasant →</text>
+          <text x="6" y="174" fill="#776f87" font-size="10">← unpleasant</text>
+          <circle id="halo" cx="160" cy="160" r="16" fill="#fff" opacity=".12" style="transition: all .7s cubic-bezier(.2,.8,.2,1)"/>
+          <circle id="dot" cx="160" cy="160" r="7" fill="#fff" style="transition: all .7s cubic-bezier(.2,.8,.2,1)"/>
+        </svg>
+      </div>
+      <div>
+        <p class="vibe" id="vibe"></p>
+        <p class="meta" id="meta"></p>
+        <p class="lab">Sentiment</p>
+        <div class="bars" id="sent"></div>
+        <p class="lab">Emotion</p>
+        <div class="bars" id="emo"></div>
+        <p class="lab">What moved it</p>
+        <div class="chips" id="why"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>How good are the models?</h2>
+  <p class="note">TweetEval&rsquo;s official test sets and metrics, so the numbers sit directly beside the published ones.
+     Every variant&rsquo;s regularisation was tuned on the validation split; test was scored once. Each row adds one
+     feature block to the row above it.</p>
+  <div class="grid2">
+    {% for task, title, metric in [("sentiment", "Sentiment · 3 classes", "macro recall"), ("emotion", "Emotion · 4 classes", "macro F1")] %}
+    {% set m = metrics[task] %}
+    <div class="card">
+      <p class="lab" style="margin-bottom:4px">{{ title }}</p>
+      <p class="note" style="margin-bottom:8px">{{ "{:,}".format(m.n_train) }} train · {{ "{:,}".format(m.n_test) }} test · {{ metric }}</p>
+      <div class="scroll">
+      <table>
+        <tr><th>Model</th><th class="num">{{ metric }}</th></tr>
+        {% for r in m.rows %}
+        <tr class="{{ 'full' if r.variant == '+lexicon' else '' }}"><td>{{ r.name }}</td><td class="num">{{ "%.1f"|format(r.official * 100) }}</td></tr>
+        {% endfor %}
+        <tr class="sep"><td colspan="2">Published, same test set</td></tr>
+        {% for name, v in m.published.items() %}
+        <tr class="pub"><td>{{ name }}</td><td class="num">{{ "%.1f"|format(v) }}</td></tr>
+        {% endfor %}
+      </table>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2>How the vibe is placed</h2>
+  <p class="note">Valence is P(positive) &minus; P(negative) from the sentiment model. Energy weights the emotion
+     model&rsquo;s probabilities by where each emotion sits on the circumplex&rsquo;s arousal axis
+     ({% for e, a in arousal.items() %}{{ e }} {{ a }}{{ ", " if not loop.last }}{% endfor %}) and nudges it for how
+     it&rsquo;s typed (exclamation marks, CAPS, elongated words) and for a short list of calm or activated words. Those
+     placements and nudges are hand-set constants, not learned. The word cues exist because TweetEval&rsquo;s four
+     emotions have no calm-pleasant class, so without them a cosy Sunday reads as high-energy joy. Nothing was trained on &ldquo;hype&rdquo; or &ldquo;chill&rdquo; labels;
+     the quadrants are a reading of the two real models.</p>
+
+  <footer>Data: <a href="https://github.com/cardiffnlp/tweeteval">TweetEval</a> (Barbieri et al., 2020). Code and method:
+    <a href="https://github.com/otawfik/vibe-check">github.com/otawfik/vibe-check</a> · JSON: <a href="/api/metrics">/api/metrics</a></footer>
 </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const COLORS = { hype: "#ff9f43", chill: "#4ecdc4", heated: "#ff6b6b", down: "#7f8cff", neutral: "#a59db5" };
+const SENT_COL = { negative: "#ff6b6b", neutral: "#a59db5", positive: "#4ecdc4" };
+const EMO_COL = { anger: "#ff6b6b", joy: "#ff9f43", optimism: "#4ecdc4", sadness: "#7f8cff" };
+
+function bars(el, probs, colors) {
+  el.replaceChildren();
+  for (const [k, v] of Object.entries(probs)) {
+    const name = document.createElement("span"); name.textContent = k;
+    const track = document.createElement("div"); track.className = "track";
+    const fill = document.createElement("div"); fill.className = "fill"; fill.style.background = colors[k]; fill.style.width = "0";
+    track.append(fill);
+    const val = document.createElement("span"); val.className = "v"; val.textContent = Math.round(v * 100) + "%";
+    el.append(name, track, val);
+    requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.width = v * 100 + "%")));
+  }
+}
+
+function chips(r) {
+  const el = $("why"); el.replaceChildren();
+  const add = (t, cls) => { const s = document.createElement("span"); s.className = "chip " + cls; s.textContent = t; el.append(s); };
+  r.drivers_up.forEach(([t]) => add("+ " + t, "up"));
+  r.drivers_down.forEach(([t]) => add("− " + t, "down"));
+  r.cues.forEach((c) => add(c, "cue"));
+  if (!el.children.length) { const s = document.createElement("span"); s.className = "empty"; s.textContent = "No strong word-level signal."; el.append(s); }
+}
+
+async function check() {
+  const text = $("text").value.trim();
+  if (!text) return;
+  $("go").disabled = true;
+  $("status").textContent = "Checking… (the first request loads the models)";
+  try {
+    const res = await fetch("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    const r = await res.json();
+    if (!res.ok) throw new Error(r.error || res.statusText);
+    $("result").hidden = false;
+    // kept inside the plot and clear of the corner labels
+    const x = 160 + r.valence * 128, y = 290 - r.energy * 250;
+    for (const id of ["dot", "halo"]) { $(id).setAttribute("cx", x); $(id).setAttribute("cy", y); $(id).setAttribute("fill", COLORS[r.vibe]); }
+    $("vibe").textContent = r.vibe;
+    $("vibe").style.color = COLORS[r.vibe];
+    $("meta").textContent = `valence ${r.valence >= 0 ? "+" : ""}${r.valence.toFixed(2)} · energy ${r.energy.toFixed(2)}`;
+    bars($("sent"), r.sentiment, SENT_COL);
+    bars($("emo"), r.emotion, EMO_COL);
+    chips(r);
+    $("status").textContent = "";
+  } catch (e) {
+    $("status").textContent = "Error: " + e.message;
+  } finally {
+    $("go").disabled = false;
+  }
+}
+$("go").onclick = check;
+$("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) check(); });
+document.querySelectorAll(".ex").forEach((b) => (b.onclick = () => { $("text").value = b.textContent; check(); }));
+</script>
 </body>
 </html>

@@ -73,3 +73,12 @@ INTENSIFIERS = {"very": 1.5, "so": 1.4, "really": 1.5, "extremely": 2.0,
                 "super": 1.6, "totally": 1.5, "absolutely": 1.8}
 
 NEGATIONS = {"not", "no", "never", "dont", "can't", "wont", "isnt", "aint"}
+
+# arousal cues: words that signal a calm or an activated state regardless of
+# whether it's pleasant (the circumplex's vertical axis). Hand-picked, small,
+# and applied as a capped nudge on top of the emotion model, not a classifier.
+CALM = {"calm", "quiet", "slow", "cozy", "cosy", "relax", "relaxing", "relaxed", "peaceful", "chill",
+        "chilling", "sleepy", "tea", "coffee", "book", "reading", "nap", "gentle", "soft", "lazy",
+        "sunday", "breeze", "sunset", "unwind", "rest", "resting"}
+ACTIVE = {"insane", "crazy", "unreal", "wild", "lets", "hype", "hyped", "screaming", "omg", "furious",
+          "rage", "won", "win", "party", "pumped", "explode", "losing", "fuming", "again"}
